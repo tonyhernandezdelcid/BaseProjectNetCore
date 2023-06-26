@@ -1,0 +1,174 @@
+﻿@{ 
+    ViewBag.Title = "Usuario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<h2> Agregar usuario</h2>
+
+
+<div class="form-group" style="display:none;">
+    <input id="txtUsuarioId" class="form-control" name="UserId" />
+
+</div>
+
+
+<div class="form-group">
+    <label for="UserCodigo">Codigo:</label>
+    <input id="txtUsuarioCodigo" class="form-control" name="UserCodigo" />
+
+</div>
+
+
+<div class="form-group">
+    <label for="UserNombre">Nombre:</label>
+    <input id="txtUsuarioNombre" class="form-control" name="UserNombre" />
+
+</div>
+
+<div class="form-group">
+    <label for="UserTelefono">Telefono:</label>
+    <input id="txtUsuarioTelefono" class="form-control" name="UserTelefono" />
+
+</div>
+
+
+<div class="text-center panel-body">
+
+    
+    <button id="btnSave" class="btn btn-sm btn-primary">Guardar nuevo usuario</button>
+    <button id="btnUpdate" class="btn btn-sm btn-success">Modificar usuario</button>
+
+
+</div>
+
+
+
+<br />
+
+<h2>Listado de usuarios</h2>
+<table id="tblUsers" class="table table-sm table-striped table-bordered m-2">
+
+    <thead>
+        <tr>
+            <th>Id Usuario</th>
+            <th>Codigo</th>
+            <th>Nombre</th>
+            <th>Telefono</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+
+</table>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+
+    });
+
+    function GetAllUsers() {
+        $.getJSON("/Usuario/GetAllUsers", function (usuarios) {
+            $("#tblUsers tbody tr").remove();
+            $.map(usuarios, function (usuario) {
+                $("#tblUsers tbody").append("<tr>"
+                    + " <td>" + usuario.id + "</td>"
+                    + " <td>" + usuario.codigo + "</td>"
+                    + " <td>" + usuario.nombre + "</td>"
+                    + " <td>" + usuario.telefono + "</td>"
+                    + " <td>"
+                    + "      <button class='btn-success' onclick='Edit(\"" + usuario.id + "\")' style='margin-right:5px;'>Editar </button>"
+                    + "      <button class='btn-danger' onclick= 'Delete(\"" + usuario.id + "\")'> borrar </button>"
+                    + " </td> "
+                    + " </tr>");
+
+            });
+        });
+    }
+
+
+    function Edit(id) {
+        if (id!= null) {
+            $.getJSON("/Usuario/GetById?userId=" + id, function (usuario) {
+                $("#txtUsuarioId").val(usuario.id);
+                $("#txtUsuarioCodigo").val(usuario.codigo);
+                $("#txtUsuarioNombre").val(usuario.nombre);
+                $("#txtUsuarioTelefono").val(usuario.telefono);
+            });
+        }
+    }
+
+
+
+    function Delete(id) {
+        if (id != null) {
+            console.log('intentando eliminar: ' + id);
+
+            $.ajax({
+                url: '/Usuario/deleteUser?userID=' + id,
+                type: 'DELETE',
+                dataType: 'json',
+                success: function (data) {
+
+                    GetAllUsers()
+                    window.alert('Usuario Eliminado')
+
+                },
+                error: function (ex) {
+                    console.log('Error al eliminar usuario');
+                }
+
+            });
+        }
+    }
+
+
+    $("#btnSave").click(function () {
+        var oUser = {
+            codigo: $("#txtUsuarioCodigo").val(),
+            nombre: $("#txtUsuarioNombre").val(),
+            telefono: $("#txtUsuarioTelefono").val()
+
+        };
+
+        $.post("/Usuario/AddUser", oUser)
+            .done(function (data) {
+
+                GetAllUsers()
+                window.alert('Usuario agregado')
+
+
+            });
+
+    });
+
+
+    $("#btnUpdate").click(function () {
+        var oUser = {
+            id: $("#txtUsuarioId").val(),
+            codigo: $("#txtUsuarioCodigo").val(),
+            nombre: $("#txtUsuarioNombre").val(),
+            telefono: $("#txtUsuarioTelefono").val()
+
+        };
+
+        $.post("/Usuario/updateUser", oUser)
+            .done(function (data) {
+
+                GetAllUsers()
+                window.alert('Usuario modificado')
+
+
+            });
+
+    });
+
+
+
+    window.onload = function () {
+        GetAllUsers()
+    };
+
+</script>
